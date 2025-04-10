@@ -1,15 +1,17 @@
 import SwiftUI
 
-public struct GraphView<NodeContent: View, Graph: DirectedGraph.Graph>: View {
+public struct GraphView<NodeContent: View, EdgeContent: View, Graph: DirectedGraph.Graph>: View {
     @ObservedObject private var viewModel: GraphViewModel<Graph>
     @State private var currentOffset = CGSize.zero
     @State private var finalOffset = CGSize.zero
     @State private var scale: CGFloat = 1
     private let nodeContent: (Graph.NodeType) -> NodeContent
-    
-    public init(_ viewModel: GraphViewModel<Graph>, @ViewBuilder nodeContent: @escaping (Graph.NodeType) -> NodeContent) {
+    private let edgeContent: (Graph.EdgeType) -> EdgeContent
+
+    public init(_ viewModel: GraphViewModel<Graph>, @ViewBuilder nodeContent: @escaping (Graph.NodeType) -> NodeContent, @ViewBuilder edgeContent: @escaping (Graph.EdgeType) -> EdgeContent) {
         self.viewModel = viewModel
         self.nodeContent = nodeContent
+        self.edgeContent = edgeContent
     }
     
     public var body: some View {
@@ -25,12 +27,14 @@ public struct GraphView<NodeContent: View, Graph: DirectedGraph.Graph>: View {
         
         return ZStack {
             ForEach(viewModel.edges) { edge in
-                EdgeView(viewModel: edge)
+                EdgeView(viewModel: edge) {
+                    self.edgeContent(edge.edge)
+                }
             }
             
             ForEach(viewModel.nodes) { node in
                 NodeView(viewModel: node) {
-                    self.nodeContent((node.node as? Graph.NodeType)!)
+                    self.nodeContent(node.node)
                 }
             }
         }
@@ -53,11 +57,11 @@ struct GraphView_Previews: PreviewProvider {
         SimpleNode(id: "4", group: 2)]
     
     private static let edges = [
-        SimpleEdge(source: "1", target: "1", value: 5),
-        SimpleEdge(source: "1", target: "2", value: 5),
-        SimpleEdge(source: "1", target: "3", value: 1),
-        SimpleEdge(source: "3", target: "4", value: 2),
-        SimpleEdge(source: "2", target: "3", value: 1)
+        SimpleEdge(source: nodes[0], target: nodes[0], value: 5),
+        SimpleEdge(source: nodes[0], target: nodes[1], value: 5),
+        SimpleEdge(source: nodes[0], target: nodes[2], value: 1),
+        SimpleEdge(source: nodes[2], target: nodes[3], value: 2),
+        SimpleEdge(source: nodes[1], target: nodes[2], value: 1)
     ]
     
     static var previews: some View {
@@ -66,12 +70,14 @@ struct GraphView_Previews: PreviewProvider {
     }
 }
 
-public extension GraphView where NodeContent == DefaultNodeView, Graph == SimpleGraph {
+public extension GraphView where NodeContent == DefaultNodeView, EdgeContent == DefaultEdgeView, Graph == SimpleGraph {
     init(_ viewModel: GraphViewModel<SimpleGraph>) {
         let count = viewModel.graphNodes.compactMap { $0.group }.countDistinct
         let palette = Palette(colorCount: count)
-        self.init(viewModel) { node in
+        self.init(viewModel, nodeContent: { node in
             DefaultNodeView(node: node, palette: palette)
-        }
+        }, edgeContent: { edge in
+            DefaultEdgeView(edge: edge)
+        })
     }
 }

@@ -5,8 +5,8 @@ final public class GraphViewModel<Graph: DirectedGraph.Graph>: ObservableObject 
     private var timer: Timer?
     private var isSimulating: Bool { timer != nil }
     private var edgeIndices: [[Int]]
-    private(set) var nodes: [NodeViewModel]
-    private(set) var edges: [EdgeViewModel]
+    private(set) var nodes: [NodeViewModel<Graph>]
+    private(set) var edges: [EdgeViewModel<Graph>]
     let graphNodes: [Graph.NodeType]
     var willChange = PassthroughSubject<Void, Never>()
     
@@ -35,18 +35,18 @@ final public class GraphViewModel<Graph: DirectedGraph.Graph>: ObservableObject 
         isSimulating ? stopLayout() : startLayout()
     }
     
-    private static func buildNodes(_ graph: Graph) -> [NodeViewModel] {
+    private static func buildNodes(_ graph: Graph) -> [NodeViewModel<Graph>] {
         return graph.nodes.map { NodeViewModel($0) }
     }
     
-    private static func buildEdges(_ edges: [Edge], nodeViewModels: [NodeViewModel]) -> [EdgeViewModel] {
+    private static func buildEdges(_ edges: [Graph.EdgeType], nodeViewModels: [NodeViewModel<Graph>]) -> [EdgeViewModel<Graph>] {
         let nodeViewModelLookup = Dictionary(uniqueKeysWithValues: nodeViewModels.map { ($0.id, $0) })
-        let viewModels: [EdgeViewModel] = edges.compactMap {
-            guard let source = nodeViewModelLookup[$0.source],
-                let target = nodeViewModelLookup[$0.target] else {
-                    return nil
+        let viewModels: [EdgeViewModel<Graph>] = edges.compactMap {
+            guard let source = nodeViewModelLookup[$0.source.id],
+                  let target = nodeViewModelLookup[$0.target.id] else {
+                return nil
             }
-            return EdgeViewModel(source: source, target: target, value: CGFloat($0.value))
+            return EdgeViewModel<Graph>(edge: $0, source: source, target: target)
         }
         
         return viewModels
@@ -57,8 +57,8 @@ final public class GraphViewModel<Graph: DirectedGraph.Graph>: ObservableObject 
         var edgeIndices = Array(repeating: [Int](), count: graph.nodes.count)
         
         for edge in graph.edges {
-            guard let a = nodeIndexLookup[edge.source],
-                let b = nodeIndexLookup[edge.target] else {
+            guard let a = nodeIndexLookup[edge.source.id],
+                  let b = nodeIndexLookup[edge.target.id] else {
                     continue
             }
             edgeIndices[a].append(b)

@@ -1,15 +1,16 @@
 import SwiftUI
 import Combine
 
-final class NodeViewModel: ObservableObject, Identifiable {
-    let node: Node
-    let id: String
+final class NodeViewModel<Graph: DirectedGraph.Graph>: ObservableObject, Identifiable {
+    typealias NodeType = Graph.NodeType
+    let node: NodeType
+    let id: NodeType.Identifier
     @Published var interactive = false
     @Published var position: CGPoint
     @Published var size: CGSize
     var velocity: CGPoint
     
-    init(_ node: Node) {
+    init(_ node: NodeType) {
         self.node = node
         id = node.id
         position = .zero

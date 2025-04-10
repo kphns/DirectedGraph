@@ -1,4 +1,4 @@
-public struct SimpleNode: Node {
+public struct SimpleNode: Node, Codable {
     public var id: String
     public var group: Int
     

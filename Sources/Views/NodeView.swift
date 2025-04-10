@@ -1,12 +1,12 @@
 import Foundation
 import SwiftUI
 
-struct NodeView<Content: View>: View {
-    @ObservedObject private var viewModel: NodeViewModel
+struct NodeView<Graph: DirectedGraph.Graph, Content: View>: View {
+    @ObservedObject private var viewModel: NodeViewModel<Graph>
     private let content: () -> Content
     @State private var delta: CGPoint = .zero
     
-    public init(viewModel: NodeViewModel, @ViewBuilder content: @escaping () -> Content) {
+    public init(viewModel: NodeViewModel<Graph>, @ViewBuilder content: @escaping () -> Content) {
         self.viewModel = viewModel
         self.content = content
     }

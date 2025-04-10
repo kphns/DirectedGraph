@@ -1,8 +1,15 @@
 import SwiftUI
 
 struct Arrow: Shape {
+    internal init(start: CGPoint, end: CGPoint? = nil, thickness: CGFloat, showHead: Bool = true) {
+        self.start = start
+        self.end = end
+        self.thickness = thickness
+        self.showHead = showHead
+    }
+    
     enum Constants {
-        static let pointerLineLength: CGFloat = 30
+        static let pointerLineLength: CGFloat = 15
         static let arrowAngle = CGFloat(Double.pi / 6)
         static let circularAngle: Angle = .degrees(90)
         static var circularRadius: CGFloat { pointerLineLength * 1.25 }
@@ -11,6 +18,7 @@ struct Arrow: Shape {
     let start: CGPoint
     let end: CGPoint?
     let thickness: CGFloat
+    let showHead: Bool
     
     func path(in rect: CGRect) -> Path {
         var path = Path()
@@ -51,9 +59,13 @@ struct Arrow: Shape {
             x: lineEnd.x + Constants.pointerLineLength * cos(CGFloat(Double.pi) - angle - Constants.arrowAngle),
             y: lineEnd.y - Constants.pointerLineLength * sin(CGFloat(Double.pi) - angle - Constants.arrowAngle))
         
-        path.move(to: arrowLine1)
-        path.addLine(to: lineEnd)
-        path.addLine(to: arrowLine2)
+        if showHead {
+            path.move(to: arrowLine1)
+            path.addLine(to: lineEnd)
+            path.addLine(to: arrowLine2)
+        } else {
+            path.addLine(to: lineEnd)
+        }
         
         return path.strokedPath(.init(lineWidth: thickness))
     }

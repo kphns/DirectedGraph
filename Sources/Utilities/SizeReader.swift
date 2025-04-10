@@ -1,6 +1,6 @@
 import SwiftUI
 
-extension View {
+public extension View {
     func sizeReader(_ size: Binding<CGSize>) -> some View {
         SizeReader(size: size) {
             self
@@ -8,10 +8,10 @@ extension View {
     }
 }
 
-struct SizeReader<Content: View>: View {
+public struct SizeReader<Content: View>: View {
     @Binding var size: CGSize
     let content: () -> Content
-    var body: some View {
+    public var body: some View {
         ZStack {
             content()
                 .background(

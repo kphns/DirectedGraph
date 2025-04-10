@@ -1,6 +1,6 @@
 import Foundation
 
-public struct SimpleGraph: Graph {
+public struct SimpleGraph: Graph, Codable {
     public var nodes: [SimpleNode]
     public var edges: [SimpleEdge]
     

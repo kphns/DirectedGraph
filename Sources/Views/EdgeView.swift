@@ -1,18 +1,23 @@
 import SwiftUI
 import Combine
 
-struct EdgeView: View {
-    @ObservedObject var viewModel: EdgeViewModel
-    
+struct EdgeView<Graph: DirectedGraph.Graph, Content: View>: View {
+    @ObservedObject var viewModel: EdgeViewModel<Graph>
+    private let content: () -> Content
+
+    public init(viewModel: EdgeViewModel<Graph>, @ViewBuilder content: @escaping () -> Content) {
+        self.viewModel = viewModel
+        self.content = content
+    }
+
     var body: some View {
         ZStack {
-            Arrow(start: viewModel.start, end: viewModel.end, thickness: viewModel.value)
+            Arrow(start: viewModel.start, end: viewModel.end, thickness: viewModel.weight, showHead: viewModel.showHead)
                 .foregroundColor(.gray)
                 .opacity(0.5)
             
             if viewModel.showValue {
-                Text(viewModel.value.description)
-                    .font(.caption)
+                content()
                     .position(viewModel.middle)
             }
         }
